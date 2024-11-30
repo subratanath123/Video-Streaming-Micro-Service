@@ -1,0 +1,60 @@
+plugins {
+	id 'java'
+	id("org.springframework.boot") version '3.1.2'
+	id 'io.spring.dependency-management' version '1.1.3'
+}
+
+group = 'com.video.streaming'
+version = '0.0.1-SNAPSHOT'
+
+repositories {
+	mavenCentral()
+	maven { url 'https://repo.spring.io/milestone' }
+	maven { url 'https://repo.spring.io/snapshot' }
+}
+
+ext {
+	set('springCloudVersion', "2022.0.4")
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	compileOnly group: 'javax.servlet', name: 'javax.servlet-api', version: '3.0.1'
+
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+	implementation 'org.springframework.cloud:spring-cloud-starter-config'
+	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+
+	implementation 'org.projectlombok:lombok:1.18.28'
+	annotationProcessor 'org.projectlombok:lombok:1.18.28'
+
+	implementation 'io.awspring.cloud:spring-cloud-aws-sqs:3.2.1'
+	implementation 'com.amazonaws:aws-java-sdk-sqs:1.12.772'
+
+	// https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-starter-aws
+	implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+
+    // https://mvnrepository.com/artifact/io.awspring.cloud/spring-cloud-aws-starter-sqs
+	testImplementation 'io.awspring.cloud:spring-cloud-aws-starter-sqs:3.2.1'
+
+	// https://mvnrepository.com/artifact/io.awspring.cloud/spring-cloud-aws-autoconfigure
+	implementation 'io.awspring.cloud:spring-cloud-aws-autoconfigure:3.2.1'
+
+
+
+}
+
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+	}
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
