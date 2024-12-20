@@ -1,4 +1,4 @@
-package com.video.streaming.streaming_service;
+package com.video.streaming.streaming_service.controller;
 
 import io.awspring.cloud.sqs.operations.SqsTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class QueueMessageController {
+public class MediaConvertController {
 
     @Value("${spring.cloud.aws.sqs.endpoint}")
     private String sqsEndpoint;
@@ -15,7 +15,7 @@ public class QueueMessageController {
     @Autowired
     private SqsTemplate sqsTemplate;
 
-    @RequestMapping("/v1/sqs/sendMessage")
+    @RequestMapping("/v1/mediaconvert/startPendingTask")
     public void sendEvent(){
         sqsTemplate.send(sqsEndpoint, "test message");
     }
