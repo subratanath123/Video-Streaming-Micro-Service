@@ -11,7 +11,10 @@ public class MediaConvertService {
     @Autowired
     private MediaConvertClient mediaConvertClient;
 
-    public String createMediaConvertJob(String inputFilePath, String outputFilePath, String videoJobTemplate) {
+    public String createMediaConvertJob(String inputFilePath,
+                                        String outputFilePath,
+                                        String videoJobTemplate) {
+
         Input input = Input.builder()
                 .fileInput(inputFilePath)
                 .build();

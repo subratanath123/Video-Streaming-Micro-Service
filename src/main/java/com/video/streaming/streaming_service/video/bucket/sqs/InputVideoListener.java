@@ -1,7 +1,16 @@
 package com.video.streaming.streaming_service.video.bucket.sqs;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.video.streaming.streaming_service.dto.S3Event;
+import com.video.streaming.streaming_service.redis.RedisMediaConvertJobConsumerService;
 import io.awspring.cloud.sqs.annotation.SqsListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.connection.stream.ObjectRecord;
+import org.springframework.data.redis.connection.stream.RecordId;
+import org.springframework.data.redis.connection.stream.StreamRecords;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.sqs.model.Message;
@@ -10,22 +19,31 @@ import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.video.streaming.streaming_service.constants.Constants.BUCKET_CREATE_EVENT_STREAM;
+
 @Service
 public class InputVideoListener {
 
+    private final Logger log = LoggerFactory.getLogger(InputVideoListener.class);
+
     @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
+    private RedisTemplate<String, S3Event> redisTemplate;
 
     @SqsListener("receive-video-upload-event-queue")
-    public void listen(Message message) {
+    public void listen(Message message) throws JsonProcessingException {
+        String sqsEventBody = message.body();
+        ObjectMapper objectMapper = new ObjectMapper();
 
-        Map<String, String> inputBucketUploadDataMap = new HashMap<>();
-        inputBucketUploadDataMap.put("bucket-file-create-event", message.body());
+        String decodedJson = objectMapper.convertValue(sqsEventBody, String.class);
+        S3Event s3Event = objectMapper.readValue(decodedJson, S3Event.class);
 
-        redisTemplate
-                .opsForStream()
-                .add("video-upload-bucket-event", inputBucketUploadDataMap);
+        ObjectRecord<String, S3Event> record = StreamRecords
+                .newRecord()
+                .ofObject(s3Event)
+                .withStreamKey(BUCKET_CREATE_EVENT_STREAM);
 
-        System.out.println("Message received on listen method at {}" + OffsetDateTime.now());
+        RecordId recordId = this.redisTemplate.opsForStream().add(record);
+
+        log.info("Message received on listen method at {}, stream recordId {}", OffsetDateTime.now(), recordId);
     }
 }

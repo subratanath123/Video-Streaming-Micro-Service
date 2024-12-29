@@ -26,7 +26,7 @@ public class MediaConvertConfig {
     private String region;
 
     @Bean
-    MediaConvertClient mediaConvertClient() {
+    public MediaConvertClient mediaConvertClient() {
         MediaConvertClient mc = MediaConvertClient.builder()
                 .region(Region.of(region))
                 .credentialsProvider(StaticCredentialsProvider
