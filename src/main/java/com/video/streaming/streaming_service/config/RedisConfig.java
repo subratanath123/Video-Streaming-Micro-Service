@@ -1,5 +1,6 @@
 package com.video.streaming.streaming_service.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.video.streaming.streaming_service.dto.S3Event;
 import com.video.streaming.streaming_service.redis.RedisMediaConvertJobConsumerService;
 import com.video.streaming.streaming_service.redis.RedisS3EventMessageProcessor;
@@ -10,10 +11,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
-import org.springframework.data.redis.connection.stream.Consumer;
-import org.springframework.data.redis.connection.stream.ObjectRecord;
-import org.springframework.data.redis.connection.stream.ReadOffset;
-import org.springframework.data.redis.connection.stream.StreamOffset;
+import org.springframework.data.redis.connection.stream.*;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
@@ -57,29 +55,34 @@ public class RedisConfig {
     }
 
     @Bean
-    public RedisTemplate<String, Object> redisTemplate() {
+    public RedisTemplate<String, Object> redisObjectTemplate() {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(redisConnectionFactory());
 
         // Configure serializers (e.g., JSON serializer)
         template.setKeySerializer(new StringRedisSerializer());
-        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+        template.setValueSerializer(new Jackson2JsonRedisSerializer<>(MapRecord.class));
         return template;
     }
 
     @Bean
-    public RedisTemplate<String, S3Event> redisTemplateForBaseEntity(RedisConnectionFactory redisConnectionFactory) {
-        RedisTemplate<String, S3Event> redisTemplate = new RedisTemplate<>();
+    public RedisTemplate<String, String> redisTemplate(RedisConnectionFactory connectionFactory) {
+        RedisTemplate<String, String> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory);
 
-        redisTemplate.setConnectionFactory(redisConnectionFactory);
-        redisTemplate.setKeySerializer(new StringRedisSerializer());
-        redisTemplate.setValueSerializer(new Jackson2JsonRedisSerializer<>(S3Event.class));
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setValueSerializer(new StringRedisSerializer());
+        template.setHashKeySerializer(new StringRedisSerializer());
+        template.setHashValueSerializer(new StringRedisSerializer());
 
-        return redisTemplate;
+        template.afterPropertiesSet();
+
+        return template;
     }
 
     @Bean
     public Subscription subscription(RedisConnectionFactory connectionFactory) throws UnknownHostException {
+
         redisMediaConvertJobConsumerService.createConsumerGroupIfNotExists(connectionFactory, BUCKET_CREATE_EVENT_STREAM, REDIS_STREAM_SERVER_GROUP);
 
         StreamOffset<String> streamOffset = StreamOffset.create(BUCKET_CREATE_EVENT_STREAM, ReadOffset.lastConsumed());
@@ -92,21 +95,21 @@ public class RedisConfig {
                 .targetType(S3Event.class)
                 .build();
 
-        StreamMessageListenerContainer<String, ObjectRecord<String, S3Event>> container =
+        StreamMessageListenerContainer<String, ObjectRecord<String, S3Event>>  container =
                 StreamMessageListenerContainer
                         .create(connectionFactory, options);
 
         Subscription subscription =
                 container.receive(Consumer.from(REDIS_STREAM_SERVER_GROUP, InetAddress.getLocalHost().getHostName()),
-                        streamOffset, newRedisS3EventMessageProcessor());
+                        streamOffset, purchaseStreamListener());
 
         container.start();
         return subscription;
     }
 
     @Bean
-    public StreamListener<String, ObjectRecord<String, S3Event>> newRedisS3EventMessageProcessor() {
+    public StreamListener<String, ObjectRecord<String, S3Event>> purchaseStreamListener() {
+        // handle message from stream
         return new RedisS3EventMessageProcessor();
     }
-
 }

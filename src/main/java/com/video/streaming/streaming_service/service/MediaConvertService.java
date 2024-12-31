@@ -5,6 +5,8 @@ import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.mediaconvert.MediaConvertClient;
 import software.amazon.awssdk.services.mediaconvert.model.*;
 
+import static com.video.streaming.streaming_service.constants.Constants.MEDIA_CONVERT_ROLE_ARN;
+
 @Service
 public class MediaConvertService {
 
@@ -34,6 +36,7 @@ public class MediaConvertService {
 
         CreateJobResponse createJobResponse = mediaConvertClient.createJob(jobReqBuilder ->
                 jobReqBuilder
+                        .role(MEDIA_CONVERT_ROLE_ARN)
                         .jobTemplate(videoJobTemplate)
                         .settings(
                                 JobSettings

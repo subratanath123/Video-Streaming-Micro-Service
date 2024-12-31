@@ -6,19 +6,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.connection.stream.ObjectRecord;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.stream.StreamListener;
 import org.springframework.stereotype.Service;
 
-import static com.video.streaming.streaming_service.constants.Constants.*;
+import static com.video.streaming.streaming_service.constants.Constants.AWS_VIDEO_JOB_TEMPLATE;
+import static com.video.streaming.streaming_service.constants.Constants.AWS_VIDEO_OUTPUT_BUCKET;
 
 @Service
 public class RedisS3EventMessageProcessor implements StreamListener<String, ObjectRecord<String, S3Event>> {
 
     private Logger log = LoggerFactory.getLogger(RedisS3EventMessageProcessor.class);
-
-    @Autowired
-    private RedisTemplate<String, S3Event> redisBaseEntityRedisTemplate;
 
     @Autowired
     private MediaConvertService mediaConvertService;
@@ -28,15 +25,12 @@ public class RedisS3EventMessageProcessor implements StreamListener<String, Obje
         S3Event s3Event = record.getValue();
 
         mediaConvertService.createMediaConvertJob(
-                s3Event.detail().object().key(),
+                s3Event.getDetail().getObject().getKey(),
                 AWS_VIDEO_OUTPUT_BUCKET,
                 AWS_VIDEO_JOB_TEMPLATE
         );
 
-        log.info("Message is consuming for user event {}", s3Event.id());
+        log.info("Message is consuming for user event {}", s3Event.getId());
 
-        redisBaseEntityRedisTemplate
-                .opsForStream()
-                .acknowledge(REDIS_STREAM_SERVER_GROUP, record);
     }
 }

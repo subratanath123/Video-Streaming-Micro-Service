@@ -18,7 +18,7 @@ public class RedisMediaConvertJobConsumerService {
                 redisConnectionFactory.getConnection().streamCommands()
                         .xGroupCreate(streamKey.getBytes(),
                                 groupName,
-                                ReadOffset.from("0-0"), true);
+                                ReadOffset.lastConsumed(), true);
 
 
                 log.info("Consumer Group {} created with stream key {}", groupName, streamKey);
