@@ -21,19 +21,6 @@ public class MediaConvertService {
                 .fileInput(inputFilePath)
                 .build();
 
-        // Build Output Group
-        OutputGroup outputGroup = OutputGroup.builder()
-                .customName("Video Output Group")
-                .outputGroupSettings(
-                        OutputGroupSettings.builder()
-                                .type(OutputGroupType.FILE_GROUP_SETTINGS)
-                                .fileGroupSettings(FileGroupSettings.builder()
-                                        .destination(outputFilePath)
-                                        .build())
-                                .build()
-                )
-                .build();
-
         CreateJobResponse createJobResponse = mediaConvertClient.createJob(jobReqBuilder ->
                 jobReqBuilder
                         .role(MEDIA_CONVERT_ROLE_ARN)
@@ -42,7 +29,6 @@ public class MediaConvertService {
                                 JobSettings
                                         .builder()
                                         .inputs(input)
-                                        .outputGroups(outputGroup)
                                         .build()
                         )
         );

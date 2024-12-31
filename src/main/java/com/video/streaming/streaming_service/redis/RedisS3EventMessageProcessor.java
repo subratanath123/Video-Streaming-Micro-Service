@@ -9,8 +9,7 @@ import org.springframework.data.redis.connection.stream.ObjectRecord;
 import org.springframework.data.redis.stream.StreamListener;
 import org.springframework.stereotype.Service;
 
-import static com.video.streaming.streaming_service.constants.Constants.AWS_VIDEO_JOB_TEMPLATE;
-import static com.video.streaming.streaming_service.constants.Constants.AWS_VIDEO_OUTPUT_BUCKET;
+import static com.video.streaming.streaming_service.constants.Constants.*;
 
 @Service
 public class RedisS3EventMessageProcessor implements StreamListener<String, ObjectRecord<String, S3Event>> {
@@ -25,7 +24,7 @@ public class RedisS3EventMessageProcessor implements StreamListener<String, Obje
         S3Event s3Event = record.getValue();
 
         mediaConvertService.createMediaConvertJob(
-                s3Event.getDetail().getObject().getKey(),
+                AWS_VIDEO_INPUT_BUCKET + "/" + s3Event.getDetail().getObject().getKey(),
                 AWS_VIDEO_OUTPUT_BUCKET,
                 AWS_VIDEO_JOB_TEMPLATE
         );
