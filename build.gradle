@@ -37,21 +37,13 @@ dependencies {
 
 	implementation 'io.awspring.cloud:spring-cloud-aws-sqs:3.2.1'
 	implementation 'com.amazonaws:aws-java-sdk-sqs:1.12.772'
-
-	// https://mvnrepository.com/artifact/software.amazon.awssdk/mediaconvert
+	implementation 'com.amazonaws:aws-java-sdk-cloudfront:1.12.283'
 	implementation 'software.amazon.awssdk:mediaconvert:2.29.35'
+	implementation 'com.amazonaws:aws-java-sdk-s3:1.12.780'
 
-	// https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-starter-aws
 	implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
-
-    // https://mvnrepository.com/artifact/io.awspring.cloud/spring-cloud-aws-starter-sqs
 	testImplementation 'io.awspring.cloud:spring-cloud-aws-starter-sqs:3.2.1'
-
-	// https://mvnrepository.com/artifact/io.awspring.cloud/spring-cloud-aws-autoconfigure
 	implementation 'io.awspring.cloud:spring-cloud-aws-autoconfigure:3.2.1'
-
-
-
 }
 
 dependencyManagement {

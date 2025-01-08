@@ -1,8 +1,7 @@
 package com.video.streaming.streaming_service.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.video.streaming.streaming_service.dto.S3Event;
-import com.video.streaming.streaming_service.redis.RedisMediaConvertJobConsumerService;
+import com.video.streaming.streaming_service.redis.RedisConsumerGroupService;
 import com.video.streaming.streaming_service.redis.RedisS3EventMessageProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,7 +12,6 @@ import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.connection.stream.*;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.data.redis.stream.StreamListener;
@@ -43,7 +41,7 @@ public class RedisConfig {
     private String redisPassword;
 
     @Autowired
-    private RedisMediaConvertJobConsumerService redisMediaConvertJobConsumerService;
+    private RedisConsumerGroupService redisConsumerGroupService;
 
     @Bean
     public LettuceConnectionFactory redisConnectionFactory() {
@@ -83,7 +81,7 @@ public class RedisConfig {
     @Bean
     public Subscription subscription(RedisConnectionFactory connectionFactory) throws UnknownHostException {
 
-        redisMediaConvertJobConsumerService.createConsumerGroupIfNotExists(connectionFactory, BUCKET_CREATE_EVENT_STREAM, REDIS_STREAM_SERVER_GROUP);
+        redisConsumerGroupService.createConsumerGroupIfNotExists(connectionFactory, BUCKET_CREATE_EVENT_STREAM, REDIS_STREAM_SERVER_GROUP);
 
         StreamOffset<String> streamOffset = StreamOffset.create(BUCKET_CREATE_EVENT_STREAM, ReadOffset.lastConsumed());
 
